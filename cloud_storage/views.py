@@ -65,3 +65,12 @@ def download_view(request):
 def admin_page_view(request):
     uploaded_files = UploadedFile.objects.all().order_by('-created_at')
     return render(request, 'cloud_storage/admin_page.html', {'uploaded_files': uploaded_files})
+
+def delete_file_view(request, file_id):
+    if request.method == 'POST':
+        uploaded_file_obj = get_object_or_404(UploadedFile, file_id=file_id)
+        # Delete file from filesystem
+        if os.path.exists(uploaded_file_obj.file.path):
+            os.remove(uploaded_file_obj.file.path)
+        uploaded_file_obj.delete() # Delete from database
+    return redirect('cloud_storage:admin_page')
