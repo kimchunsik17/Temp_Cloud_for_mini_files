@@ -63,7 +63,6 @@ git checkout -b feat/upload-view (업로드 뷰 및 템플릿 상세 작업 시�
 4. Gemini CLI 명령어 기록
 
 사용자와의 문답은 항상 DEVEOPMENT_GEMINI_LOG.md에 저장할 것.
-
 === 1. 프로젝트 초기 설정 ===
 # (예시) Django 프로젝트 생성 (가정)
 # gemini create django_project --name TempCloud --template bootstrap
