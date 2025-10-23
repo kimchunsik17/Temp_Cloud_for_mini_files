@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
 from .models import UploadedFile
 import uuid
+import os
 
 # Create your views here.
 
@@ -36,9 +37,10 @@ def download_view(request):
 
         if uploaded_file_obj.password == password:
             file_path = uploaded_file_obj.file.path
+            file_name = os.path.basename(uploaded_file_obj.file.name)
             with open(file_path, 'rb') as fh:
                 response = HttpResponse(fh.read(), content_type="application/octet-stream")
-                response['Content-Disposition'] = 'inline; filename=' + uploaded_file_obj.file.name
+                response['Content-Disposition'] = 'inline; filename="%s"' % file_name
                 return response
         else:
             return render(request, 'cloud_storage/index.html', {'error': 'Invalid file ID or password.'})
