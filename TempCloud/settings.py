@@ -120,6 +120,10 @@ STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Custom settings for file upload limits
+MAX_FILE_SIZE_PER_UPLOAD = 5 * 1024 * 1024  # 5 MB
+MAX_FILES_PER_IP = 10
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 

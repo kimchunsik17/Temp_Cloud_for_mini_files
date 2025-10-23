@@ -4,6 +4,7 @@ from .models import UploadedFile
 import uuid
 import os
 import urllib.parse
+from django.conf import settings
 
 ADMIN_SECRET_PHRASE = b"admin_access_granted"
 
@@ -31,6 +32,14 @@ def upload_view(request):
             ip_address = request.META.get('REMOTE_ADDR')
             if not ip_address:
                 ip_address = request.META.get('HTTP_X_FORWARDED_FOR')
+
+            # Check file size limit
+            if uploaded_file.size > settings.MAX_FILE_SIZE_PER_UPLOAD:
+                return render(request, 'cloud_storage/upload.html', {'error': f'파일 크기가 {settings.MAX_FILE_SIZE_PER_UPLOAD / (1024 * 1024):.0f}MB를 초과합니다.'})
+
+            # Check file count limit per IP
+            if ip_address and UploadedFile.objects.filter(ip_address=ip_address).count() >= settings.MAX_FILES_PER_IP:
+                return render(request, 'cloud_storage/upload.html', {'error': f'IP당 업로드 가능한 파일 개수({settings.MAX_FILES_PER_IP}개)를 초과했습니다.'})
 
             file_id = str(uuid.uuid4())[:10]  # Generate a unique 10-character file ID
             UploadedFile.objects.create(
@@ -66,7 +75,12 @@ def download_view(request):
 
 def admin_page_view(request):
     uploaded_files = UploadedFile.objects.all().order_by('-created_at')
-    return render(request, 'cloud_storage/admin_page.html', {'uploaded_files': uploaded_files})
+    context = {
+        'uploaded_files': uploaded_files,
+        'max_file_size': settings.MAX_FILE_SIZE_PER_UPLOAD,
+        'max_files_per_ip': settings.MAX_FILES_PER_IP,
+    }
+    return render(request, 'cloud_storage/admin_page.html', context)
 
 def delete_file_view(request, file_id):
     if request.method == 'POST':
