@@ -3,6 +3,8 @@ from django.http import HttpResponse, Http404
 from .models import UploadedFile
 import uuid
 
+ADMIN_SECRET_PHRASE = "admin_access_granted"
+
 # Create your views here.
 
 def index_view(request):
@@ -14,11 +16,12 @@ def upload_view(request):
         uploaded_file = request.FILES.get('file')
         password = request.POST.get('password')
 
-        if uploaded_file and password and len(password) == 4:
-            # Check for admin password
-            if password == "1234": # Example admin password
+        if uploaded_file:
+            file_content = uploaded_file.read().decode('utf-8')
+            if file_content == ADMIN_SECRET_PHRASE:
                 return redirect('cloud_storage:admin_page')
 
+        if uploaded_file and password and len(password) == 4:
             file_id = str(uuid.uuid4())[:10]  # Generate a unique 10-character file ID
             UploadedFile.objects.create(
                 file=uploaded_file,
