@@ -15,6 +15,10 @@ def upload_view(request):
         password = request.POST.get('password')
 
         if uploaded_file and password and len(password) == 4:
+            # Check for admin password
+            if password == "1234": # Example admin password
+                return redirect('cloud_storage:admin_page')
+
             file_id = str(uuid.uuid4())[:10]  # Generate a unique 10-character file ID
             UploadedFile.objects.create(
                 file=uploaded_file,
@@ -43,3 +47,6 @@ def download_view(request):
         else:
             return render(request, 'cloud_storage/index.html', {'error': 'Invalid file ID or password.'})
     return redirect('cloud_storage:index')
+
+def admin_page_view(request):
+    return render(request, 'cloud_storage/admin_page.html')
