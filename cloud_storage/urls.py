@@ -5,4 +5,5 @@ app_name = 'cloud_storage'
 
 urlpatterns = [
     path('', views.index_view, name='index'),
+    path('upload/', views.upload_view, name='upload'),
 ]
