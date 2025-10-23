@@ -11,6 +11,12 @@
         <h1 class="mb-4">관리자 페이지</h1>
         <p>여기는 관리자만 접근할 수 있는 페이지입니다.</p>
 
+        <h2 class="mt-4">업로드 제한 설정</h2>
+        <ul class="list-group mb-4">
+            <li class="list-group-item">최대 파일 크기: {{ max_file_size / (1024 * 1024) | floatformat:0 }} MB</li>
+            <li class="list-group-item">IP당 최대 파일 개수: {{ max_files_per_ip }} 개</li>
+        </ul>
+
         <h2 class="mt-5">업로드된 파일 목록</h2>
         {% if uploaded_files %}
         <table class="table table-striped">
@@ -20,6 +26,7 @@
                     <th scope="col">파일 이름</th>
                     <th scope="col">업로드 날짜</th>
                     <th scope="col">IP 주소</th>
+                    <th scope="col">삭제</th>
                 </tr>
             </thead>
             <tbody>
@@ -29,6 +36,12 @@
                     <td><a href="{{ file.file.url }}" target="_blank">{{ file.file.name }}</a></td>
                     <td>{{ file.created_at }}</td>
                     <td>{{ file.ip_address }}</td>
+                    <td>
+                        <form action="{% url 'cloud_storage:delete_file' file.file_id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">삭제</button>
+                        </form>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
