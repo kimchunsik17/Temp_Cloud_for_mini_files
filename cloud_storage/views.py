@@ -1,4 +1,5 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, Http404
 from .models import UploadedFile
 import uuid
 
@@ -25,3 +26,20 @@ def upload_view(request):
             # Handle invalid input (e.g., no file, no password, password not 4 digits)
             return render(request, 'cloud_storage/upload.html', {'error': 'Invalid file or password.'})
     return render(request, 'cloud_storage/upload.html')
+
+def download_view(request):
+    if request.method == 'POST':
+        file_id = request.POST.get('file_id')
+        password = request.POST.get('password')
+
+        uploaded_file_obj = get_object_or_404(UploadedFile, file_id=file_id)
+
+        if uploaded_file_obj.password == password:
+            file_path = uploaded_file_obj.file.path
+            with open(file_path, 'rb') as fh:
+                response = HttpResponse(fh.read(), content_type="application/octet-stream")
+                response['Content-Disposition'] = 'inline; filename=' + uploaded_file_obj.file.name
+                return response
+        else:
+            return render(request, 'cloud_storage/index.html', {'error': 'Invalid file ID or password.'})
+    return redirect('cloud_storage:index')
