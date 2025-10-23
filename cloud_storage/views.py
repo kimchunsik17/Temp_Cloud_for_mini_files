@@ -22,11 +22,16 @@ def upload_view(request):
                 return redirect('cloud_storage:admin_page')
 
         if uploaded_file and password and len(password) == 4:
+            ip_address = request.META.get('REMOTE_ADDR')
+            if not ip_address:
+                ip_address = request.META.get('HTTP_X_FORWARDED_FOR')
+
             file_id = str(uuid.uuid4())[:10]  # Generate a unique 10-character file ID
             UploadedFile.objects.create(
                 file=uploaded_file,
                 password=password,
-                file_id=file_id
+                file_id=file_id,
+                ip_address=ip_address
             )
             return render(request, 'cloud_storage/upload.html', {'file_id': file_id})
         else:
@@ -52,4 +57,5 @@ def download_view(request):
     return redirect('cloud_storage:index')
 
 def admin_page_view(request):
-    return render(request, 'cloud_storage/admin_page.html')
+    uploaded_files = UploadedFile.objects.all().order_by('-created_at')
+    return render(request, 'cloud_storage/admin_page.html', {'uploaded_files': uploaded_files})
