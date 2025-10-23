@@ -24,6 +24,12 @@ Day 1 (예: 10/23)
 
 Git 전략 수립 (main, develop, feat 브랜치)
 
+사이트 뼈대 완성
+파일을 업로드하고 파일 ID와 pw를 통해 다운로드할 수 있는 기능을 추가
+admin 페이지와 접속 방법 추가
+admin 페이지의 기능 추가(파일 삭제, ip 당 파일 크기, 업로드 가능한 개수 수정 기능)
+페이지 별로 이동 가능한 버튼 추가
+
 Gemini CLI 사용 프롬프트:
 
 - **User:** `https://github.com/kimchunsik17/Temp_Cloud_for_mini_files 에 연결하고 branch 해줄래`
@@ -91,3 +97,18 @@ Day X (날짜)
 작업 내용:
 
 Gemini CLI 사용 프롬프트:
+
+## 2025-10-23: `admin_02` 브랜치 병합 및 `.gitignore` 설정
+
+**요청:** `main` 브랜치에 `admin_02`의 변경사항 병합.
+
+**진행 과정:**
+1.  이전에 완료되지 않은 merge 상태 발견 (`MERGE_HEAD exists`).
+2.  `git commit`으로 보류 중이던 merge를 먼저 완료함.
+3.  `git merge admin_02` 실행 결과, 이미 최신 상태(Already up to date)임을 확인.
+4.  `git status`를 통해 추적되지 않는 파이썬 캐시 파일(`__pycache__`) 및 `db.sqlite3` 파일 발견.
+5.  `.gitignore` 파일을 생성하여 불필요한 파일들을 Git 추적에서 제외하도록 설정.
+6.  Git 인덱스에서 캐시된 파일들을 정리하는 과정에서 실수 발생. `git reset --hard HEAD~1` 명령어로 잘못된 commit을 되돌려 복구.
+7.  올바른 절차에 따라 `.gitignore` 파일을 먼저 commit한 후, 추적에서 제외될 파일들을 인덱스에서 제거.
+8.  `git status`로 작업 폴더가 깨끗한 상태임을 최종 확인.
+9.  Gemini가 실행한 명령어 로그를 `DEVEOPMENT_GEMINI_LOG.md`에 별도로 생성 및 기록.

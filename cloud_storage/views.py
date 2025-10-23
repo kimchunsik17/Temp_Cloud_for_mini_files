@@ -1,10 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
-from .models import UploadedFile
-import uuid
+from .models import UploadedFile, GlobalSettings
 import os
-import urllib.parse
-from django.conf import settings
 
 ADMIN_SECRET_PHRASE = b"admin_access_granted"
 
@@ -16,16 +13,16 @@ def index_view(request):
 
 def upload_view(request):
     if request.method == 'POST':
+        settings = GlobalSettings.load()
         uploaded_file = request.FILES.get('file')
         password = request.POST.get('password')
 
         if uploaded_file:
-            # Reset file pointer to the beginning after reading for admin check
             uploaded_file.seek(0)
             file_content_bytes = uploaded_file.read()
             if file_content_bytes == ADMIN_SECRET_PHRASE:
+                request.session['is_admin'] = True
                 return redirect('cloud_storage:admin_page')
-            # Reset file pointer again for potential re-reading by FileField
             uploaded_file.seek(0)
 
         if uploaded_file and password and len(password) == 4:
@@ -33,15 +30,13 @@ def upload_view(request):
             if not ip_address:
                 ip_address = request.META.get('HTTP_X_FORWARDED_FOR')
 
-            # Check file size limit
-            if uploaded_file.size > settings.MAX_FILE_SIZE_PER_UPLOAD:
-                return render(request, 'cloud_storage/upload.html', {'error': f'파일 크기가 {settings.MAX_FILE_SIZE_PER_UPLOAD / (1024 * 1024):.0f}MB를 초과합니다.'})
+            if uploaded_file.size > settings.max_file_size:
+                return render(request, 'cloud_storage/upload.html', {'error': f'파일 크기가 {settings.max_file_size / (1024 * 1024):.0f}MB를 초과합니다.'})
 
-            # Check file count limit per IP
-            if ip_address and UploadedFile.objects.filter(ip_address=ip_address).count() >= settings.MAX_FILES_PER_IP:
-                return render(request, 'cloud_storage/upload.html', {'error': f'IP당 업로드 가능한 파일 개수({settings.MAX_FILES_PER_IP}개)를 초과했습니다.'})
+            if ip_address and UploadedFile.objects.filter(ip_address=ip_address).count() >= settings.max_files_per_ip:
+                return render(request, 'cloud_storage/upload.html', {'error': f'IP당 업로드 가능한 파일 개수({settings.max_files_per_ip}개)를 초과했습니다.'})
 
-            file_id = str(uuid.uuid4())[:10]  # Generate a unique 10-character file ID
+            file_id = str(uuid.uuid4())[:10]
             UploadedFile.objects.create(
                 file=uploaded_file,
                 password=password,
@@ -50,7 +45,6 @@ def upload_view(request):
             )
             return render(request, 'cloud_storage/upload.html', {'file_id': file_id})
         else:
-            # Handle invalid input (e.g., no file, no password, password not 4 digits)
             return render(request, 'cloud_storage/upload.html', {'error': 'Invalid file or password.'})
     return render(request, 'cloud_storage/upload.html')
 
@@ -74,15 +68,34 @@ def download_view(request):
     return redirect('cloud_storage:index')
 
 def admin_page_view(request):
+    if not request.session.get('is_admin'):
+        return redirect('cloud_storage:index')
+
+    settings = GlobalSettings.load()
+
+    if request.method == 'POST':
+        max_size_mb = request.POST.get('max_file_size')
+        max_files = request.POST.get('max_files_per_ip')
+        
+        if max_size_mb:
+            settings.max_file_size = int(max_size_mb) * 1024 * 1024
+        if max_files:
+            settings.max_files_per_ip = int(max_files)
+        
+        settings.save()
+        return redirect('cloud_storage:admin_page')
+
     uploaded_files = UploadedFile.objects.all().order_by('-created_at')
     context = {
         'uploaded_files': uploaded_files,
-        'max_file_size': settings.MAX_FILE_SIZE_PER_UPLOAD,
-        'max_files_per_ip': settings.MAX_FILES_PER_IP,
+        'max_file_size_mb': settings.max_file_size / (1024 * 1024),
+        'max_files_per_ip': settings.max_files_per_ip,
     }
     return render(request, 'cloud_storage/admin_page.html', context)
 
 def delete_file_view(request, file_id):
+    if not request.session.get('is_admin'):
+        return redirect('cloud_storage:index')
     if request.method == 'POST':
         uploaded_file_obj = get_object_or_404(UploadedFile, file_id=file_id)
         # Delete file from filesystem
@@ -90,3 +103,7 @@ def delete_file_view(request, file_id):
             os.remove(uploaded_file_obj.file.path)
         uploaded_file_obj.delete() # Delete from database
     return redirect('cloud_storage:admin_page')
+
+def logout_view(request):
+    request.session['is_admin'] = False
+    return redirect('cloud_storage:index')
