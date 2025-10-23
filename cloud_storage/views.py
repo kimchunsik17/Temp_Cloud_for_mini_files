@@ -58,7 +58,7 @@ def download_view(request):
             encoded_file_name = urllib.parse.quote(file_name.encode('utf-8'))
             with open(file_path, 'rb') as fh:
                 response = HttpResponse(fh.read(), content_type="application/octet-stream")
-                response['Content-Disposition'] = f'attachment; filename*=UTF-8'''{encoded_file_name}'
+                response['Content-Disposition'] = f"attachment; filename*=UTF-8''{encoded_file_name}"
                 return response
         else:
             return render(request, 'cloud_storage/index.html', {'error': 'Invalid file ID or password.'})
