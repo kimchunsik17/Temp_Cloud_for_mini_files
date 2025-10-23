@@ -3,6 +3,7 @@ from django.http import HttpResponse, Http404
 from .models import UploadedFile
 import uuid
 import os
+import urllib.parse
 
 ADMIN_SECRET_PHRASE = b"admin_access_granted"
 
@@ -54,9 +55,10 @@ def download_view(request):
         if uploaded_file_obj.password == password:
             file_path = uploaded_file_obj.file.path
             file_name = os.path.basename(uploaded_file_obj.file.name)
+            encoded_file_name = urllib.parse.quote(file_name.encode('utf-8'))
             with open(file_path, 'rb') as fh:
                 response = HttpResponse(fh.read(), content_type="application/octet-stream")
-                response['Content-Disposition'] = 'inline; filename="%s"' % file_name
+                response['Content-Disposition'] = f'attachment; filename*=UTF-8'''{encoded_file_name}'
                 return response
         else:
             return render(request, 'cloud_storage/index.html', {'error': 'Invalid file ID or password.'})
