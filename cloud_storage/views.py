@@ -38,6 +38,9 @@ def upload_view(request):
             if ip_address and UploadedFile.objects.filter(ip_address=ip_address).count() >= settings.max_files_per_ip:
                 return render(request, 'cloud_storage/upload.html', {'error': f'IP당 업로드 가능한 파일 개수({settings.max_files_per_ip}개)를 초과했습니다.'})
 
+            if UploadedFile.objects.count() >= settings.max_total_files:
+                return render(request, 'cloud_storage/upload.html', {'error': f'서버에 업로드 가능한 최대 파일 개수({settings.max_total_files}개)를 초과했습니다.'})
+
             file_id = str(uuid.uuid4())[:10]
             UploadedFile.objects.create(
                 file=uploaded_file,
@@ -78,12 +81,19 @@ def admin_page_view(request):
     if request.method == 'POST':
         max_size_mb = request.POST.get('max_file_size')
         max_files = request.POST.get('max_files_per_ip')
+        auto_delete_days = request.POST.get('auto_delete_days')
         
         if max_size_mb:
             settings.max_file_size = int(max_size_mb) * 1024 * 1024
         if max_files:
             settings.max_files_per_ip = int(max_files)
+        if auto_delete_days is not None:
+            settings.auto_delete_days = int(auto_delete_days)
         
+        max_total_files = request.POST.get('max_total_files')
+        if max_total_files is not None:
+            settings.max_total_files = int(max_total_files)
+
         settings.save()
         return redirect('cloud_storage:admin_page')
 
@@ -92,6 +102,8 @@ def admin_page_view(request):
         'uploaded_files': uploaded_files,
         'max_file_size_mb': settings.max_file_size / (1024 * 1024),
         'max_files_per_ip': settings.max_files_per_ip,
+        'auto_delete_days': settings.auto_delete_days,
+        'max_total_files': settings.max_total_files,
     }
     return render(request, 'cloud_storage/admin_page.html', context)
 
@@ -109,3 +121,6 @@ def delete_file_view(request, file_id):
 def logout_view(request):
     request.session['is_admin'] = False
     return redirect('cloud_storage:index')
+
+def about_view(request):
+    return render(request, 'cloud_storage/about.html')

@@ -10,4 +10,5 @@ urlpatterns = [
     path('admin_page/', views.admin_page_view, name='admin_page'),
     path('delete/<str:file_id>/', views.delete_file_view, name='delete_file'),
     path('logout/', views.logout_view, name='logout'),
+    path('about/', views.about_view, name='about'),
 ]

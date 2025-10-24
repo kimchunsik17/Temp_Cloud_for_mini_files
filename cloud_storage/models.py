@@ -16,6 +16,8 @@ class UploadedFile(models.Model):
 class GlobalSettings(models.Model):
     max_file_size = models.BigIntegerField(default=50 * 1024 * 1024)  # 50MB default
     max_files_per_ip = models.IntegerField(default=10)
+    auto_delete_days = models.IntegerField(default=0) # 0 means disabled
+    max_total_files = models.IntegerField(default=100)
 
     def __str__(self):
         return "Global Settings"

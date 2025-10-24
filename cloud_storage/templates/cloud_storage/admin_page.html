@@ -23,6 +23,14 @@
                         <label for="maxFilesPerIpRange" class="form-label">IP당 최대 파일 개수: <span id="maxFilesPerIpValue">{{ max_files_per_ip }}</span> 개</label>
                         <input type="range" class="form-range" min="1" max="50" id="maxFilesPerIpRange" name="max_files_per_ip" value="{{ max_files_per_ip }}">
                     </div>
+                    <div class="mb-3">
+                        <label for="autoDeleteDaysRange" class="form-label">자동 삭제 기간: <span id="autoDeleteDaysValue">{{ auto_delete_days }}</span> 일 (0일은 비활성화)</label>
+                        <input type="range" class="form-range" min="0" max="30" id="autoDeleteDaysRange" name="auto_delete_days" value="{{ auto_delete_days }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="maxTotalFilesRange" class="form-label">최대 저장 파일 개수: <span id="maxTotalFilesValue">{{ max_total_files }}</span> 개</label>
+                        <input type="range" class="form-range" min="1" max="100" id="maxTotalFilesRange" name="max_total_files" value="{{ max_total_files }}">
+                    </div>
                     <button type="submit" class="btn btn-primary">적용</button>
                 </form>
             </div>
@@ -80,6 +88,18 @@
     const maxFilesPerIpValue = document.getElementById('maxFilesPerIpValue');
     maxFilesPerIpRange.addEventListener('input', (event) => {
         maxFilesPerIpValue.textContent = event.target.value;
+    });
+
+    const autoDeleteDaysRange = document.getElementById('autoDeleteDaysRange');
+    const autoDeleteDaysValue = document.getElementById('autoDeleteDaysValue');
+    autoDeleteDaysRange.addEventListener('input', (event) => {
+        autoDeleteDaysValue.textContent = event.target.value;
+    });
+
+    const maxTotalFilesRange = document.getElementById('maxTotalFilesRange');
+    const maxTotalFilesValue = document.getElementById('maxTotalFilesValue');
+    maxTotalFilesRange.addEventListener('input', (event) => {
+        maxTotalFilesValue.textContent = event.target.value;
     });
 </script>
 {% endblock %}

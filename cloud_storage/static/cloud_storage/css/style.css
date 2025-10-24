@@ -38,6 +38,19 @@ body {
     color: var(--google-blue);
 }
 
+.header .logo a span {
+    color: var(--google-grey-700);
+}
+
+.header-nav a {
+    color: var(--google-grey-700);
+    font-weight: 500;
+}
+
+.header-nav a:hover {
+    color: var(--google-blue);
+}
+
 .main-content {
     padding: 24px;
 }
