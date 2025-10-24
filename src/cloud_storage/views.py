@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
+from django.core.cache import cache
 from .models import UploadedFile, GlobalSettings
 import os
 import uuid
@@ -58,9 +59,26 @@ def download_view(request):
         file_id = request.POST.get('file_id')
         password = request.POST.get('password')
 
-        uploaded_file_obj = get_object_or_404(UploadedFile, file_id=file_id)
+        ip_address = request.META.get('REMOTE_ADDR')
+        if not ip_address:
+            ip_address = request.META.get('HTTP_X_FORWARDED_FOR')
+
+        if ip_address:
+            failed_attempts_key = f'failed_attempts_{ip_address}'
+            failed_attempts = cache.get(failed_attempts_key, 0)
+
+            if failed_attempts >= 5:
+                return render(request, 'cloud_storage/index.html', {'error': '너무 많은 시도를 하셨습니다. 5분 후에 다시 시도해주세요.'})
+
+        try:
+            uploaded_file_obj = UploadedFile.objects.get(file_id=file_id)
+        except UploadedFile.DoesNotExist:
+            return render(request, 'cloud_storage/index.html', {'error': '잘못된 파일 번호입니다.'})
 
         if uploaded_file_obj.password == password:
+            if ip_address:
+                cache.delete(f'failed_attempts_{ip_address}')
+
             file_path = uploaded_file_obj.file.path
             file_name = os.path.basename(uploaded_file_obj.file.name)
             encoded_file_name = urllib.parse.quote(file_name.encode('utf-8'))
@@ -69,7 +87,11 @@ def download_view(request):
                 response['Content-Disposition'] = f"attachment; filename*=UTF-8''{encoded_file_name}"
                 return response
         else:
-            return render(request, 'cloud_storage/index.html', {'error': 'Invalid file ID or password.'})
+            if ip_address:
+                failed_attempts = cache.get(failed_attempts_key, 0)
+                cache.set(failed_attempts_key, failed_attempts + 1, timeout=300) # 5 minutes
+            return render(request, 'cloud_storage/index.html', {'error': '파일 번호 또는 비밀번호가 잘못되었습니다.'})
+            
     return redirect('cloud_storage:index')
 
 def admin_page_view(request):

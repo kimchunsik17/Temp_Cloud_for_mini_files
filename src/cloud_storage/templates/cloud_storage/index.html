@@ -10,6 +10,11 @@
                 <h1 class="h3">파일 다운로드</h1>
                 <p class="text-muted">파일 번호와 비밀번호를 입력하여 파일을 다운로드하세요.</p>
             </div>
+            {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+            {% endif %}
             <div class="card p-4">
                 <form action="{% url 'cloud_storage:download' %}" method="post">
                     {% csrf_token %}
