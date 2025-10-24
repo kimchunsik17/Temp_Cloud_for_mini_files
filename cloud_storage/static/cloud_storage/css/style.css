@@ -1,0 +1,133 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+
+:root {
+    --google-blue: #1a73e8;
+    --google-grey-100: #f8f9fa;
+    --google-grey-300: #e8eaed;
+    --google-grey-500: #bdc1c6;
+    --google-grey-700: #5f6368;
+    --google-grey-900: #202124;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--google-grey-100);
+    color: var(--google-grey-900);
+}
+
+.header {
+    background-color: #fff;
+    border-bottom: 1px solid var(--google-grey-300);
+    padding: 8px 24px;
+    display: flex;
+    align-items: center;
+}
+
+.header .logo {
+    display: flex;
+    align-items: center;
+    font-size: 22px;
+    color: var(--google-grey-700);
+}
+
+.header .logo .material-icons {
+    font-size: 28px;
+    margin-right: 8px;
+    color: var(--google-blue);
+}
+
+.main-content {
+    padding: 24px;
+}
+
+.card {
+    border: 1px solid var(--google-grey-300);
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 1px 2px 0 rgba(60,64,67,0.302), 0 2px 6px 2px rgba(60,64,67,0.149);
+}
+
+.form-control {
+    border: 1px solid var(--google-grey-500);
+    border-radius: 4px;
+    background-color: var(--google-grey-100);
+    padding: 12px 16px;
+}
+
+.form-control:focus {
+    border-color: var(--google-blue);
+    background-color: #fff;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+.btn-primary {
+    background-color: var(--google-blue);
+    border-color: var(--google-blue);
+    border-radius: 4px;
+    font-weight: 500;
+    padding: 10px 24px;
+}
+
+.btn-primary:hover {
+    background-color: #1867cf;
+    border-color: #1867cf;
+}
+
+.btn-new {
+    background-color: #fff;
+    border: 1px solid var(--google-grey-300);
+    border-radius: 24px;
+    color: var(--google-grey-700);
+    font-weight: 500;
+    padding: 12px 24px;
+    display: inline-flex;
+    align-items: center;
+    box-shadow: 0 1px 2px 0 rgba(60,64,67,0.302), 0 1px 3px 1px rgba(60,64,67,0.149);
+    transition: box-shadow .08s linear,min-width .15s cubic-bezier(0.4,0.0,0.2,1);
+}
+
+.btn-new:hover {
+    box-shadow: 0 1px 3px 0 rgba(60,64,67,0.302), 0 4px 8px 3px rgba(60,64,67,0.149);
+    background-color: var(--google-grey-100);
+    border-color: var(--google-grey-300);
+    color: var(--google-grey-900);
+}
+
+.btn-new .material-icons {
+    margin-right: 8px;
+    color: var(--google-blue);
+}
+
+/* Table Styles */
+.table {
+    --bs-table-bg: transparent;
+    --bs-table-border-color: var(--google-grey-300);
+    --bs-table-striped-bg: var(--google-grey-100);
+}
+
+.table thead th {
+    font-weight: 500;
+    color: var(--google-grey-700);
+    border-bottom-width: 1px;
+}
+
+.table tbody tr:hover {
+    background-color: var(--bs-table-striped-bg);
+}
+
+.table td,
+.table th {
+    vertical-align: middle;
+}
+
+.table a {
+    color: var(--google-grey-900);
+    text-decoration: none;
+}
+
+.table a:hover {
+    color: var(--google-blue);
+    text-decoration: underline;
+}

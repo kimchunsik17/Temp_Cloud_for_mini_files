@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, Http404
 from .models import UploadedFile, GlobalSettings
 import os
+import uuid
+import urllib.parse
 
 ADMIN_SECRET_PHRASE = b"admin_access_granted"
 

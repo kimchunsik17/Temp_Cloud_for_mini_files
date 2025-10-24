@@ -1,79 +1,85 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>관리자 페이지</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-  </head>
-  <body>
-    <div class="container mt-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>관리자 페이지</h1>
-            <a href="{% url 'cloud_storage:logout' %}" class="btn btn-secondary">로그아웃</a>
+{% extends 'cloud_storage/base.html' %}
+
+{% block title %}관리자 페이지 - 임시 파일 클라우드{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2">관리자 페이지</h1>
+                <a href="{% url 'cloud_storage:logout' %}" class="btn btn-secondary">로그아웃</a>
+            </div>
+
+            <div class="card p-4 mb-5">
+                <h2 class="h4 mb-3">업로드 제한 설정</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="maxFileSizeRange" class="form-label">최대 파일 크기: <span id="maxFileSizeValue">{{ max_file_size_mb|floatformat:0 }}</span> MB</label>
+                        <input type="range" class="form-range" min="1" max="100" id="maxFileSizeRange" name="max_file_size" value="{{ max_file_size_mb|floatformat:0 }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="maxFilesPerIpRange" class="form-label">IP당 최대 파일 개수: <span id="maxFilesPerIpValue">{{ max_files_per_ip }}</span> 개</label>
+                        <input type="range" class="form-range" min="1" max="50" id="maxFilesPerIpRange" name="max_files_per_ip" value="{{ max_files_per_ip }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">적용</button>
+                </form>
+            </div>
+
+            <h2 class="h4 mt-5">업로드된 파일 목록</h2>
+            <div class="table-responsive">
+                {% if uploaded_files %}
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="ps-4">파일 ID</th>
+                            <th scope="col">파일 이름</th>
+                            <th scope="col">업로드 날짜</th>
+                            <th scope="col">IP 주소</th>
+                            <th scope="col" class="pe-4">삭제</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for file in uploaded_files %}
+                        <tr>
+                            <td class="ps-4">{{ file.file_id }}</td>
+                            <td><a href="{{ file.file.url }}" target="_blank">{{ file.file.name }}</a></td>
+                            <td>{{ file.created_at }}</td>
+                            <td>{{ file.ip_address }}</td>
+                            <td class="pe-4">
+                                <form action="{% url 'cloud_storage:delete_file' file.file_id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm">삭제</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="card-body text-center">
+                    <p class="mb-0">업로드된 파일이 없습니다.</p>
+                </div>
+                {% endif %}
+            </div>
         </div>
-        <p>여기는 관리자만 접근할 수 있는 페이지입니다.</p>
-
-        <h2 class="mt-4">업로드 제한 설정</h2>
-        <form method="post">
-            {% csrf_token %}
-            <div class="mb-3">
-                <label for="maxFileSizeRange" class="form-label">최대 파일 크기: <span id="maxFileSizeValue">{{ max_file_size_mb|floatformat:0 }}</span> MB</label>
-                <input type="range" class="form-range" min="1" max="100" id="maxFileSizeRange" name="max_file_size" value="{{ max_file_size_mb|floatformat:0 }}">
-            </div>
-            <div class="mb-3">
-                <label for="maxFilesPerIpRange" class="form-label">IP당 최대 파일 개수: <span id="maxFilesPerIpValue">{{ max_files_per_ip }}</span> 개</label>
-                <input type="range" class="form-range" min="1" max="50" id="maxFilesPerIpRange" name="max_files_per_ip" value="{{ max_files_per_ip }}">
-            </div>
-            <button type="submit" class="btn btn-primary">적용</button>
-        </form>
-
-        <h2 class="mt-5">업로드된 파일 목록</h2>
-        {% if uploaded_files %}
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th scope="col">파일 ID</th>
-                    <th scope="col">파일 이름</th>
-                    <th scope="col">업로드 날짜</th>
-                    <th scope="col">IP 주소</th>
-                    <th scope="col">삭제</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for file in uploaded_files %}
-                <tr>
-                    <td>{{ file.file_id }}</td>
-                    <td><a href="{{ file.file.url }}" target="_blank">{{ file.file.name }}</a></td>
-                    <td>{{ file.created_at }}</td>
-                    <td>{{ file.ip_address }}</td>
-                    <td>
-                        <form action="{% url 'cloud_storage:delete_file' file.file_id %}" method="post">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger btn-sm">삭제</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p>업로드된 파일이 없습니다.</p>
-        {% endif %}
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-    <script>
-        const maxFileSizeRange = document.getElementById('maxFileSizeRange');
-        const maxFileSizeValue = document.getElementById('maxFileSizeValue');
-        maxFileSizeRange.addEventListener('input', (event) => {
-            maxFileSizeValue.textContent = event.target.value;
-        });
+</div>
+{% endblock %}
 
-        const maxFilesPerIpRange = document.getElementById('maxFilesPerIpRange');
-        const maxFilesPerIpValue = document.getElementById('maxFilesPerIpValue');
-        maxFilesPerIpRange.addEventListener('input', (event) => {
-            maxFilesPerIpValue.textContent = event.target.value;
-        });
-    </script>
-  </body>
-</html>
+{% block extra_js %}
+<script>
+    const maxFileSizeRange = document.getElementById('maxFileSizeRange');
+    const maxFileSizeValue = document.getElementById('maxFileSizeValue');
+    maxFileSizeRange.addEventListener('input', (event) => {
+        maxFileSizeValue.textContent = event.target.value;
+    });
+
+    const maxFilesPerIpRange = document.getElementById('maxFilesPerIpRange');
+    const maxFilesPerIpValue = document.getElementById('maxFilesPerIpValue');
+    maxFilesPerIpRange.addEventListener('input', (event) => {
+        maxFilesPerIpValue.textContent = event.target.value;
+    });
+</script>
+{% endblock %}
